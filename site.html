@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notepad</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .notepad-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background-color: #fff;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Header */
+        .header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .title {
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        .filename {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-left: 15px;
+        }
+
+        /* Menu */
+        .menu-bar {
+            background-color: #34495e;
+            display: flex;
+            padding: 0 10px;
+            border-bottom: 1px solid #2c3e50;
+        }
+
+        .menu-item {
+            position: relative;
+            padding: 8px 15px;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .menu-item:hover {
+            background-color: #2c3e50;
+        }
+
+        .menu-item i {
+            margin-right: 5px;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #fff;
+            min-width: 200px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            top: 100%;
+            left: 0;
+            border-radius: 0 0 4px 4px;
+            overflow: hidden;
+        }
+
+        .menu-item:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 10px 15px;
+            color: #333;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            transition: background-color 0.2s;
+            border-bottom: 1px solid #eee;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f1f1f1;
+        }
+
+        .dropdown-item i {
+            width: 20px;
+            margin-right: 10px;
+            color: #555;
+        }
+
+        .shortcut {
+            margin-left: auto;
+            color: #888;
+            font-size: 12px;
+        }
+
+        /* Main content */
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .text-area-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100%;
+            border: none;
+            padding: 20px;
+            font-size: 16px;
+            line-height: 1.5;
+            resize: none;
+            outline: none;
+            font-family: 'Consolas', 'Monaco', monospace;
+            background-color: #fff;
+            color: #333;
+        }
+
+        textarea::placeholder {
+            color: #aaa;
+        }
+
+        /* Status bar */
+        .status-bar {
+            background-color: #2c3e50;
+            color: white;
+            padding: 6px 15px;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid #1a252f;
+        }
+
+        .status-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Modal windows */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .modal-body {
+            margin-bottom: 25px;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-secondary {
+            background-color: #ecf0f1;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background-color: #d5dbdb;
+        }
+
+        .btn-danger {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+
+        /* Responsiveness */
+        @media (max-width: 768px) {
+            .menu-bar {
+                overflow-x: auto;
+            }
+            
+            .menu-item {
+                padding: 8px 10px;
+                font-size: 14px;
+            }
+            
+            .dropdown-content {
+                min-width: 180px;
+            }
+            
+            .status-bar {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="notepad-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="title">
+                <i class="fas fa-file-alt"></i> Notepad
+                <span class="filename" id="filename">New file</span>
+            </div>
+            <div class="status-item">
+                <i class="fas fa-keyboard"></i>
+                <span id="chars-count">0</span> characters
+            </div>
+        </div>
+
+        <!-- Menu -->
+        <div class="menu-bar">
+            <div class="menu-item">
+                <i class="fas fa-file"></i> File
+                <div class="dropdown-content">
+                    <a href="#" class="dropdown-item" id="new-file">
+                        <i class="fas fa-file"></i> New
+                        <span class="shortcut">Ctrl+N</span>
+                    </a>
+                    <a href="#" class="dropdown-item" id="open-file">
+                        <i class="fas fa-folder-open"></i> Open...
+                        <span class="shortcut">Ctrl+O</span>
+                    </a>
+                    <a href="#" class="dropdown-item" id="save-file">
+                        <i class="fas fa-save"></i> Save
+                        <span class="shortcut">Ctrl+S</span>
+                    </a>
+                    <a href="#" class="dropdown-item" id="save-as-file">
+                        <i class="fas fa-save"></i> Save As...
+                        <span class="shortcut">Ctrl+Shift+S</span>
+                    </a>
+                    <div class="dropdown-item" style="height: 1px; background-color: #eee; padding: 0; margin: 5px 0;"></div>
+                    <a href="#" class="dropdown-item" id="exit-app">
+                        <i class="fas fa-sign-out-alt"></i> Exit
+                    </a>
+                </div>
+            </div>
+            
+            <div class="menu-item">
+                <i class="fas fa-edit"></i> Edit
+                <div class="dropdown-content">
+                    <a href="#" class="dropdown-item" id="undo-text">
+                        <i class="fas fa-undo"></i> Undo
+                        <span class="shortcut">Ctrl+Z</span>
+                    </a>
+                    <a href="#" class="dropdown-item" id="redo-text">
+                        <i class="fas fa-redo"></i> Redo
+                        <span class="shortcut">Ctrl+Y</span>
+                    </a>
+                    <div class="dropdown-item" style="height: 1px; background-color: #eee; padding: 0; margin: 5px 0;"></div>
+                    <a href="#" class="dropdown-item" id="cut-text">
+                        <i class="fas fa-cut"></i> Cut
+                        <span class="shortcut">Ctrl+X</span>
+                    </a>
+                    <a href="#" class="dropdown-item" id="copy-text">
+                        <i class="fas fa-copy"></i> Copy
+                        <span class="shortcut">Ctrl+C</span>
+                    </a>
+                    <a href="#" class="dropdown-item" id="paste-text">
+                        <i class="fas fa-paste"></i> Paste
+                        <span class="shortcut">Ctrl+V</span>
+                    </a>
+                    <div class="dropdown-item" style="height: 1px; background-color: #eee; padding: 0; margin: 5px 0;"></div>
+                    <a href="#" class="dropdown-item" id="select-all">
+                        <i class="fas fa-mouse-pointer"></i> Select All
+                        <span class="shortcut">Ctrl+A</span>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="menu-item">
+                <i class="fas fa-question-circle"></i> Help
+                <div class="dropdown-content">
+                    <a href="#" class="dropdown-item" id="about-app">
+                        <i class="fas fa-info-circle"></i> About
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="content">
+            <div class="text-area-container">
+                <textarea id="text-area" placeholder="Enter text here..."></textarea>
+            </div>
+        </div>
+
+        <!-- Status bar -->
+        <div class="status-bar">
+            <div class="status-left">
+                <div class="status-item" id="status-text">
+                    <i class="fas fa-check-circle"></i> Ready
+                </div>
+            </div>
+            <div class="status-item">
+                <i class="fas fa-font"></i>
+                <span id="lines-count">1</span> lines
+            </div>
+        </div>
+    </div>
+
+    <!-- "About" modal window -->
+    <div class="modal" id="about-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">About</div>
+                <button class="close-btn" id="close-about">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Simple Notepad</strong></p>
+                <p>Created with HTML, CSS, and JavaScript</p>
+                <br>
+                <p><strong>Features:</strong></p>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li>Create, open, and save files</li>
+                    <li>Text editing</li>
+                    <li>Undo/redo support</li>
+                    <li>Unsaved changes detection</li>
+                    <li>Character and line counting</li>
+                </ul>
+                <br>
+                <p><strong>Version 1.0</strong></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="ok-about">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unsaved changes confirmation modal -->
+    <div class="modal" id="unsaved-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Unsaved Changes</div>
+            </div>
+            <div class="modal-body">
+                <p>You have unsaved changes. Do you want to save them?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="save-changes">Save</button>
+                <button class="btn btn-secondary" id="discard-changes">Don't Save</button>
+                <button class="btn btn-secondary" id="cancel-action">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden input for opening files -->
+    <input type="file" id="file-input" accept=".txt,.html,.css,.js,.json" style="display: none;">
+    
+    <!-- Hidden link for downloading files -->
+    <a id="download-link" style="display: none;"></a>
+
+    <script>
+        // Main application variables
+        const textArea = document.getElementById('text-area');
+        const fileInput = document.getElementById('file-input');
+        const downloadLink = document.getElementById('download-link');
+        const filenameElement = document.getElementById('filename');
+        const statusElement = document.getElementById('status-text');
+        const charsCountElement = document.getElementById('chars-count');
+        const linesCountElement = document.getElementById('lines-count');
+        
+        let currentFile = null;
+        let isModified = false;
+        let undoStack = [];
+        let redoStack = [];
+        let currentText = '';
+        
+        // Application initialization
+        function init() {
+            // Load saved data from localStorage
+            const savedText = localStorage.getItem('notepad_autosave');
+            if (savedText) {
+                textArea.value = savedText;
+                currentText = savedText;
+            }
+            
+            updateCounters();
+            updateStatus('Ready');
+            
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Save text every 30 seconds
+            setInterval(autoSave, 30000);
+        }
+        
+        // Set up event listeners
+        function setupEventListeners() {
+            // Text change
+            textArea.addEventListener('input', function() {
+                isModified = true;
+                updateCounters();
+                updateStatus('Unsaved changes');
+                
+                // Save state for undo
+                saveToUndoStack();
+            });
+            
+            // Hotkeys
+            document.addEventListener('keydown', function(e) {
+                // Ctrl+S - Save
+                if (e.ctrlKey && e.key === 's') {
+                    e.preventDefault();
+                    saveFile();
+                }
+                
+                // Ctrl+N - New file
+                if (e.ctrlKey && e.key === 'n') {
+                    e.preventDefault();
+                    newFile();
+                }
+                
+                // Ctrl+O - Open file
+                if (e.ctrlKey && e.key === 'o') {
+                    e.preventDefault();
+                    openFile();
+                }
+                
+                // Ctrl+Shift+S - Save As
+                if (e.ctrlKey && e.shiftKey && e.key === 'S') {
+                    e.preventDefault();
+                    saveAsFile();
+                }
+                
+                // Ctrl+A - Select All
+                if (e.ctrlKey && e.key === 'a') {
+                    e.preventDefault();
+                    selectAll();
+                }
+                
+                // Ctrl+Z - Undo
+                if (e.ctrlKey && e.key === 'z') {
+                    e.preventDefault();
+                    undoText();
+                }
+                
+                // Ctrl+Y - Redo
+                if (e.ctrlKey && e.key === 'y') {
+                    e.preventDefault();
+                    redoText();
+                }
+                
+                // Ctrl+X - Cut
+                if (e.ctrlKey && e.key === 'x') {
+                    e.preventDefault();
+                    cutText();
+                }
+                
+                // Ctrl+C - Copy
+                if (e.ctrlKey && e.key === 'c') {
+                    e.preventDefault();
+                    copyText();
+                }
+                
+                // Ctrl+V - Paste
+                if (e.ctrlKey && e.key === 'v') {
+                    e.preventDefault();
+                    pasteText();
+                }
+            });
+            
+            // "File" menu
+            document.getElementById('new-file').addEventListener('click', newFile);
+            document.getElementById('open-file').addEventListener('click', openFile);
+            document.getElementById('save-file').addEventListener('click', saveFile);
+            document.getElementById('save-as-file').addEventListener('click', saveAsFile);
+            document.getElementById('exit-app').addEventListener('click', exitApp);
+            
+            // "Edit" menu
+            document.getElementById('undo-text').addEventListener('click', undoText);
+            document.getElementById('redo-text').addEventListener('click', redoText);
+            document.getElementById('cut-text').addEventListener('click', cutText);
+            document.getElementById('copy-text').addEventListener('click', copyText);
+            document.getElementById('paste-text').addEventListener('click', pasteText);
+            document.getElementById('select-all').addEventListener('click', selectAll);
+            
+            // "Help" menu
+            document.getElementById('about-app').addEventListener('click', aboutApp);
+            
+            // Modal windows
+            document.getElementById('close-about').addEventListener('click', closeAboutModal);
+            document.getElementById('ok-about').addEventListener('click', closeAboutModal);
+            document.getElementById('save-changes').addEventListener('click', saveChanges);
+            document.getElementById('discard-changes').addEventListener('click', discardChanges);
+            document.getElementById('cancel-action').addEventListener('click', cancelAction);
+            
+            // Open file via input
+            fileInput.addEventListener('change', handleFileSelect);
+        }
+        
+        // "File" menu functions
+        function newFile() {
+            if (checkUnsavedChanges()) {
+                textArea.value = '';
+                currentFile = null;
+                updateFilename();
+                updateStatus('New file created');
+                isModified = false;
+                updateCounters();
+            }
+        }
+        
+        function openFile() {
+            if (checkUnsavedChanges()) {
+                fileInput.click();
+            }
+        }
+        
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                textArea.value = e.target.result;
+                currentFile = file.name;
+                updateFilename();
+                updateStatus(`Opened file: ${file.name}`);
+                isModified = false;
+                updateCounters();
+                
+                // Clear undo stack
+                undoStack = [];
+                redoStack = [];
+                saveToUndoStack();
+            };
+            
+            reader.readAsText(file);
+            
+            // Reset input to allow opening the same file again
+            fileInput.value = '';
+        }
+        
+        function saveFile() {
+            if (currentFile) {
+                downloadFile(currentFile, textArea.value);
+                updateStatus(`File saved: ${currentFile}`);
+                isModified = false;
+            } else {
+                saveAsFile();
+            }
+        }
+        
+        function saveAsFile() {
+            const filename = prompt('Enter file name:', currentFile || 'document.txt');
+            if (filename) {
+                currentFile = filename;
+                downloadFile(filename, textArea.value);
+                updateFilename();
+                updateStatus(`File saved as: ${filename}`);
+                isModified = false;
+            }
+        }
+        
+        function downloadFile(filename, content) {
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            
+            downloadLink.href = url;
+            downloadLink.download = filename;
+            downloadLink.click();
+            
+            URL.revokeObjectURL(url);
+        }
+        
+        async function checkUnsavedChanges() {
+            if (isModified) {
+                document.getElementById('unsaved-modal').style.display = 'flex';
+                return new Promise((resolve) => {
+                    // Decision will be made in modal handlers
+                    window.unsavedChangesResolve = resolve;
+                });
+            }
+            return true;
+        }
+        
+        // Unsaved changes modal handlers
+        function saveChanges() {
+            document.getElementById('unsaved-modal').style.display = 'none';
+            saveFile();
+            if (window.unsavedChangesResolve) {
+                window.unsavedChangesResolve(true);
+                window.unsavedChangesResolve = null;
+            }
+        }
+        
+        function discardChanges() {
+            document.getElementById('unsaved-modal').style.display = 'none';
+            isModified = false;
+            if (window.unsavedChangesResolve) {
+                window.unsavedChangesResolve(true);
+                window.unsavedChangesResolve = null;
+            }
+        }
+        
+        function cancelAction() {
+            document.getElementById('unsaved-modal').style.display = 'none';
+            if (window.unsavedChangesResolve) {
+                window.unsavedChangesResolve(false);
+                window.unsavedChangesResolve = null;
+            }
+        }
+        
+        function exitApp() {
+            checkUnsavedChanges().then(shouldExit => {
+                if (shouldExit) {
+                    // In web version, just clear localStorage
+                    localStorage.removeItem('notepad_autosave');
+                    alert('Notepad closed. Refresh the page to use again.');
+                }
+            });
+        }
+        
+        // "Edit" menu functions
+        function saveToUndoStack() {
+            undoStack.push(textArea.value);
+            redoStack = []; // Clear redo stack on new action
+        }
+        
+        function undoText() {
+            if (undoStack.length > 1) {
+                redoStack.push(undoStack.pop());
+                textArea.value = undoStack[undoStack.length - 1];
+                updateCounters();
+                isModified = true;
+                updateStatus('Unsaved changes');
+            }
+        }
+        
+        function redoText() {
+            if (redoStack.length > 0) {
+                const text = redoStack.pop();
+                undoStack.push(text);
+                textArea.value = text;
+                updateCounters();
+                isModified = true;
+                updateStatus('Unsaved changes');
+            }
+        }
+        
+        function cutText() {
+            document.execCommand('cut');
+            updateCounters();
+            isModified = true;
+            updateStatus('Unsaved changes');
+            saveToUndoStack();
+        }
+        
+        function copyText() {
+            document.execCommand('copy');
+        }
+        
+        async function pasteText() {
+            try {
+                const text = await navigator.clipboard.readText();
+                const start = textArea.selectionStart;
+                const end = textArea.selectionEnd;
+                
+                textArea.value = textArea.value.substring(0, start) + text + textArea.value.substring(end);
+                textArea.selectionStart = textArea.selectionEnd = start + text.length;
+                
+                updateCounters();
+                isModified = true;
+                updateStatus('Unsaved changes');
+                saveToUndoStack();
+            } catch (err) {
+                console.error('Paste error: ', err);
+                // Fallback for older browsers
+                textArea.focus();
+                document.execCommand('paste');
+            }
+        }
+        
+        function selectAll() {
+            textArea.select();
+        }
+        
+        // "Help" menu functions
+        function aboutApp() {
+            document.getElementById('about-modal').style.display = 'flex';
+        }
+        
+        function closeAboutModal() {
+            document.getElementById('about-modal').style.display = 'none';
+        }
+        
+        // Utility functions
+        function updateFilename() {
+            filenameElement.textContent = currentFile ? currentFile : 'New file';
+        }
+        
+        function updateStatus(message) {
+            const icon = isModified ? 'fa-exclamation-circle' : 'fa-check-circle';
+            statusElement.innerHTML = `<i class="fas ${icon}"></i> ${message}`;
+            
+            if (isModified) {
+                statusElement.style.color = '#e74c3c';
+            } else {
+                statusElement.style.color = 'white';
+            }
+        }
+        
+        function updateCounters() {
+            const text = textArea.value;
+            const chars = text.length;
+            const lines = text.split('\n').length;
+            
+            charsCountElement.textContent = chars;
+            linesCountElement.textContent = lines;
+        }
+        
+        function autoSave() {
+            if (textArea.value !== currentText) {
+                localStorage.setItem('notepad_autosave', textArea.value);
+                currentText = textArea.value;
+                console.log('Autosave completed');
+            }
+        }
+        
+        // Initialize application
+        init();
+    </script>
+</body>
+</html>
